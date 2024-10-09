@@ -217,8 +217,12 @@ static void can_receive (void * params)
         
         if (twai_receive(&msg_received, portMAX_DELAY) == ESP_OK) {
             
+            if (msg_received.identifier != LIVE_DATA_MESSAGE_ID) {
+                continue;
+            }
+
             if (msg_received.data_length_code != PROTOCOL_LIVE_DATA_PAYLOAD_BYTES) {
-                ESP_LOGE(tag, "CAN MESSAGE RECEIVED INVALID");
+                ESP_LOGE(tag, "INVALID CAN MESSAGE LENGTH");
                 continue;
             }
 
