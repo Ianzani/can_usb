@@ -8,7 +8,7 @@ from threading import Thread
 import time
 import struct
 
-SERIAL_PORT = '/dev/ttyACM1'
+SERIAL_PORT = '/dev/ttyACM0'
 BAUD_RATE = 115200
 LEN_RING_BUFFER = 3000
 
