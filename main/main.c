@@ -89,7 +89,7 @@ static void init_uart(const uart_port_t uart_port)
 
 static void init_can(void)
 {
-    twai_general_config_t g_config = TWAI_GENERAL_CONFIG_DEFAULT(CAN_TX_GPIO, CAN_RX_GPIO, TWAI_MODE_NO_ACK);
+    twai_general_config_t g_config = TWAI_GENERAL_CONFIG_DEFAULT(CAN_TX_GPIO, CAN_RX_GPIO, TWAI_MODE_NORMAL);
     twai_timing_config_t t_config = TWAI_TIMING_CONFIG_500KBITS();
     twai_filter_config_t f_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();
 
@@ -105,7 +105,7 @@ static void uart_event(void * params)
 
     while (1) {
         
-        if (xQueueReceive(uart0_queue, (void*) &event, 10 / portTICK_PERIOD_MS)) {
+        if (xQueueReceive(uart0_queue, (void*) &event, portMAX_DELAY)) {
             switch (event.type) {
 
                 case UART_DATA:
@@ -124,8 +124,6 @@ static void uart_event(void * params)
                 break;
             }
         }
-
-        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
 
@@ -179,11 +177,9 @@ static void can_send(void * params)
 
     while (1) {
 
-       if (xQueueReceive(queue_uart_to_can, &msg, 1 / portTICK_PERIOD_MS) == pdTRUE) {
+       if (xQueueReceive(queue_uart_to_can, &msg, portMAX_DELAY) == pdTRUE) {
             can_send_message(&msg);
         } 
-
-        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
 
