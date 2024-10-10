@@ -20,6 +20,8 @@
 #define LIVE_DATA_MESSAGE_ID                (0x10U)
 
 #define UART_NUM                            (UART_NUM_0)
+#define CAN_TX_GPIO                         (GPIO_NUM_5)
+#define CAN_RX_GPIO                         (GPIO_NUM_18)
 
 
 typedef struct {
@@ -87,7 +89,7 @@ static void init_uart(const uart_port_t uart_port)
 
 static void init_can(void)
 {
-    twai_general_config_t g_config = TWAI_GENERAL_CONFIG_DEFAULT(GPIO_NUM_5, GPIO_NUM_18, TWAI_MODE_NO_ACK);
+    twai_general_config_t g_config = TWAI_GENERAL_CONFIG_DEFAULT(CAN_TX_GPIO, CAN_RX_GPIO, TWAI_MODE_NO_ACK);
     twai_timing_config_t t_config = TWAI_TIMING_CONFIG_500KBITS();
     twai_filter_config_t f_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();
 
@@ -157,7 +159,7 @@ static void decode_and_send_uart_tx(uint8_t * data, uint8_t len)
                         .data = {msg_buffer[0], msg_buffer[1]},
                         .len = sizeof(msg_buffer)
                     };
-
+                    
                     xQueueSend(queue_uart_to_can, &buffer, portMAX_DELAY);
                 }
                 else {
@@ -177,9 +179,9 @@ static void can_send(void * params)
 
     while (1) {
 
-        if (xQueueReceive(queue_uart_to_can, &msg, 1 / portTICK_PERIOD_MS) == pdTRUE) {
+       if (xQueueReceive(queue_uart_to_can, &msg, 1 / portTICK_PERIOD_MS) == pdTRUE) {
             can_send_message(&msg);
-        }
+        } 
 
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
