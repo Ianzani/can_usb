@@ -40,8 +40,8 @@ def read_serial():
                 if len(uart_buffer) >= 10:
                     if uart_buffer[0] == 0x4e and uart_buffer[9] == 0x9a:
                         print((uart_buffer[1] | (uart_buffer[2] << 8)) / 100)
-                        speed_ref_buffer.append((uart_buffer[1] | (uart_buffer[2] << 8)) / 100)
-                        speed_read_buffer.append((uart_buffer[3] | (uart_buffer[4] << 8)) / 100)
+                        speed_ref_buffer.append(((uart_buffer[1] | (uart_buffer[2] << 8)) / 100) * 60 / (2 * np.pi))
+                        speed_read_buffer.append(((uart_buffer[3] | (uart_buffer[4] << 8)) / 100) * 60 / (2 * np.pi))
                         current_read_buffer.append((uart_buffer[5] | (uart_buffer[6] << 8)) / 100)
                         dc_voltage_read_buffer.append((uart_buffer[7] | (uart_buffer[8] << 8)) / 100)
 
