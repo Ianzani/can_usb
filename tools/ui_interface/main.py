@@ -25,6 +25,18 @@ dc_voltage_read_buffer = []
 
 run_flag = True
 
+def to_int16(value):
+    if value >= 32768:
+        value = value - 65536
+
+    return value
+
+def to_uint16(value):
+    if value < 0:
+        value = value + 65536
+
+    return value
+
 def read_serial():
     global run_flag
     while run_flag:
@@ -39,9 +51,9 @@ def read_serial():
 
                 if len(uart_buffer) >= 10:
                     if uart_buffer[0] == 0x4e and uart_buffer[9] == 0x9a:
-                        print((uart_buffer[1] | (uart_buffer[2] << 8)) / 100)
-                        speed_ref_buffer.append(((uart_buffer[1] | (uart_buffer[2] << 8)) / 100) * 60 / (2 * np.pi))
-                        speed_read_buffer.append(((uart_buffer[3] | (uart_buffer[4] << 8)) / 100) * 60 / (2 * np.pi))
+                        #print(to_int16(uart_buffer[5] | (uart_buffer[6] << 8)) / 10)
+                        speed_ref_buffer.append((to_int16(uart_buffer[1] | (uart_buffer[2] << 8)) / 10) * 60 / (2 * np.pi))
+                        speed_read_buffer.append((to_int16(uart_buffer[3] | (uart_buffer[4] << 8)) / 10) * 60 / (2 * np.pi))
                         current_read_buffer.append((uart_buffer[5] | (uart_buffer[6] << 8)) / 100)
                         dc_voltage_read_buffer.append((uart_buffer[7] | (uart_buffer[8] << 8)) / 100)
 
@@ -86,7 +98,7 @@ def update(frame):
     # Current plot
     axs[1].clear()
     axs[1].plot(current_read_buffer, color='g', linewidth=2)
-    axs[1].set_title('Corrente do Estator', fontsize=14)
+    axs[1].set_title('Corrente do Estator (Pico)', fontsize=14)
     axs[1].set_ylabel('Corrente (A)', fontsize=12)
     axs[1].grid(True)
 
@@ -98,11 +110,29 @@ def update(frame):
     axs[2].set_ylabel('Tensão (V)', fontsize=12)
     axs[2].grid(True)
 
+is_first_send = 1
+signal_value = 'None'
 def on_send():
+    global signal_value
+    global is_first_send
     try:
         user_input = int(entry.get())
-        if 0 <= user_input <= 1715: # Nominal speed
-            send_serial(round(user_input * 2 * np.pi * 100 / 60)) # RMP to rad/s
+
+        if is_first_send == 1:
+            if user_input < 0:
+                signal_value = 'neg'
+            else:
+                signal_value = 'pos'
+
+            is_first_send = 0
+
+        if (user_input < 0 and signal_value == 'pos') or (user_input >= 0 and signal_value == 'neg'):
+            print('Inversão de sentido não é permitido')
+            entry.delete(0, tk.END)
+            return
+
+        if -1800 <= user_input <= 1800: # Nominal speed
+            send_serial(to_uint16(round(user_input * 2 * np.pi * 10 / 60))) # RMP to rad/s
             entry.delete(0, tk.END)
         else:
             print("Por favor, insira um número entre 0 e 1710.")
