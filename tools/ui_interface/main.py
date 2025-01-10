@@ -99,6 +99,7 @@ def update(frame):
     axs[1].clear()
     axs[1].plot(current_read_buffer, color='g', linewidth=2)
     axs[1].set_title('Corrente do Estator (Pico)', fontsize=14)
+    axs[1].set_ylim(0, 7)
     axs[1].set_ylabel('Corrente (A)', fontsize=12)
     axs[1].grid(True)
 
@@ -107,6 +108,7 @@ def update(frame):
     axs[2].plot(dc_voltage_read_buffer, color='m', linewidth=2)
     axs[2].set_title('Tensão de Barramento', fontsize=14)
     axs[2].set_xlabel('Tempo', fontsize=12)
+    axs[2].set_ylim(0, 400)
     axs[2].set_ylabel('Tensão (V)', fontsize=12)
     axs[2].grid(True)
 
@@ -126,7 +128,7 @@ def on_send():
 
             is_first_send = 0
 
-        if (user_input < 0 and signal_value == 'pos') or (user_input >= 0 and signal_value == 'neg'):
+        if (user_input < 0 and signal_value == 'pos') or (user_input > 0 and signal_value == 'neg'):
             print('Inversão de sentido não é permitido')
             entry.delete(0, tk.END)
             return
